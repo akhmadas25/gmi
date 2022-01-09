@@ -10,6 +10,7 @@ const {
   login,
   resetPassword,
   sendResetPassword,
+  confirmAccount
 } = require("../controllers/auth");
 const { updateProfile, getProfile, getAllUsers, deleteUser } = require("../controllers/user");
 // Get addUser controller user here ...
@@ -21,7 +22,7 @@ router.get("/user", auth, getProfile)
 router.patch("/user/:id", auth, updateProfile);
 router.delete("/user/:id", auth, deleteUser);
 router.get("/users", auth, getAllUsers);
-
+router.post("/confirm/:id/:token", confirmAccount)
 router.post("/reset-password", sendResetPassword);
 router.patch("/reset-password/:id/:token", resetPassword);
 module.exports = router;

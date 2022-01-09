@@ -15,11 +15,13 @@ exports.updateProfile = async (req, res) => {
         },
       }
     );
-    res.send({
+    res.ststus(200).send({
+      status: 200,
       message: "profile successfully updated!",
     });
   } catch (error) {
-    res.send({
+    res.status(500).send({
+      status: 500,
       message: "server error",
     });
     console.log(error);
@@ -37,11 +39,15 @@ exports.getProfile = async (req, res) => {
         exclude: ["createdAt", "updatedAt", "password"],
       },
     });
-    res.send({
-      status: "success",
+    res.status(200).send({
+      status: 200,
       profile: data,
     });
   } catch (error) {
+    res.status(500).send({
+      status: 500,
+      message: "server error",
+    });
     console.log(error);
   }
 };
@@ -53,7 +59,8 @@ exports.getAllUsers = async (req, res) => {
       data: data,
     });
   } catch (error) {
-    res.send({
+    res.status(500).send({
+      status: 500,
       message: "server error",
     });
     console.log(error);
@@ -70,13 +77,14 @@ exports.deleteUser = async (req, res) => {
       },
     });
 
-    res.send({
-      status: "success",
+    res.status(200).send({
+      status: 200,
       data: data,
       message: "user has successfully deleted",
     });
   } catch (error) {
-    res.send({
+    res.status(500).send({
+      status: 500,
       message: "server error",
     });
     console.log(error);

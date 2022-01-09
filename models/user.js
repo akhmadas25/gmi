@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       phone: DataTypes.STRING,
       address: DataTypes.STRING,
       picture: DataTypes.STRING,
+      confirmed: { type: DataTypes.BOOLEAN, defaultValue: false },
       status: { type: DataTypes.ENUM("user", "admin"), defaultValue: "user" },
     },
     {

@@ -26,6 +26,10 @@ module.exports = {
       picture: {
         type: Sequelize.STRING,
       },
+      confirmed: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
       status: {
         type: Sequelize.DataTypes.ENUM("user", "admin"),
         defaultValue: "user",

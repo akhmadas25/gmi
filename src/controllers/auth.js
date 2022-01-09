@@ -52,18 +52,20 @@ exports.register = async (req, res) => {
         phone: req.body.phone,
         picture: userProfile,
       });
+
       const token = jwt.sign(
         { id: newUser.id, status: newUser.status },
-        process.env.JWT_KEY
+        process.env.JWT_KEY,
+        {
+          expiresIn: "24h",
+        }
       );
+      const link = `${process.env.BASE_URL}/confirm/${newUser.id}/${token}`;
+      await sendEmail(newUser.email, "confirm account", link);
+
       res.status(200).send({
         status: "success...",
-        data: {
-          name: newUser.name,
-          email: newUser.email,
-          status: newUser.status,
-          token,
-        },
+        message: `an email confirmation has sent to ${newUser.email}`,
       });
     }
   } catch (error) {
@@ -97,18 +99,27 @@ exports.login = async (req, res) => {
     const userExist = await user.findOne({
       where: {
         email: req.body.email,
+        confirmed: true,
       },
       attributes: {
         exclude: ["createdAt", "updatedAt"],
       },
     });
+
+    if (!userExist) {
+      return res.status(400).send({
+        status: 400,
+        message: "user not confirmed",
+      });
+    }
+
     // compare password between entered from client and from database
     const isValid = await bcrypt.compare(req.body.password, userExist.password);
 
     // check if not valid then return response with status 400 (bad request)
     if (!isValid) {
       return res.status(400).send({
-        status: "failed",
+        status: 400,
         message: "credential is invalid",
       });
     }
@@ -120,9 +131,9 @@ exports.login = async (req, res) => {
     );
 
     res.status(200).send({
-      status: "success...",
+      status: 200,
       data: {
-        name: userExist.name,
+        name: userExist.fullname,
         email: userExist.email,
         status: userExist.status,
         token,
@@ -131,13 +142,47 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      status: "failed",
+      status: 500,
       message: "Server Error",
     });
   }
 };
 
+exports.confirmAccount = async (req, res) => {
+  try {
+    const { token, id } = req.params;
+    const data = await user.findOne({
+      where: {
+        id,
+      },
+    });
 
+    await user.update(
+      {
+        ...data,
+        confirmed: true,
+      },
+      {
+        where: {
+          id,
+        },
+      }
+    );
+
+    res.status(200).send({
+      name: data.name,
+      email: data.email,
+      status: data.status,
+      token: token,
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: "failed",
+      message: "Server Error",
+    });
+    console.log(error);
+  }
+};
 
 exports.sendResetPassword = async (req, res) => {
   try {
@@ -161,7 +206,10 @@ exports.sendResetPassword = async (req, res) => {
       // generate token
       const token = jwt.sign(
         { id: data.id, status: data.status },
-        process.env.JWT_KEY
+        process.env.JWT_KEY,
+        {
+          expiresIn: "1h",
+        }
       );
 
       const link = `${process.env.BASE_URL}/reset-password/${data.id}/${token}`;
